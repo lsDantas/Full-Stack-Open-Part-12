@@ -8,6 +8,23 @@ router.get('/', async (_, res) => {
   res.send(todos);
 });
 
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  req.todo = await Todo.findById(id);
+
+  if (!req.todo) return res.sendStatus(404);
+  res.send(req.todo);
+});
+
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const newEntry = req.body;
+  const updatedEntry = await Todo.findByIdAndUpdate(id, newEntry);
+
+  if (!updatedEntry) return res.sendStatus(404);
+  res.sendStatus(200);
+});
+
 /* POST todo to listing. */
 router.post('/', async (req, res) => {
   const todo = await Todo.create({
@@ -20,6 +37,7 @@ router.post('/', async (req, res) => {
 const singleRouter = express.Router();
 
 const findByIdMiddleware = async (req, res, next) => {
+  console.log('Passed middleware.');
   const { id } = req.params
   req.todo = await Todo.findById(id)
   if (!req.todo) return res.sendStatus(404)
