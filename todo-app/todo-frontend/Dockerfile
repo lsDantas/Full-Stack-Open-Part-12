@@ -1,18 +1,21 @@
-# Build Stage
-FROM node:16 AS build-stage
-WORKDIR /usr/src/app
+FROM node:16@sha256:c33a8221330d87a2113fb6cdbb8fbb243592c62f89de923e9ef5bb8b627c2b9d
 
-COPY . .
+WORKDIR /usr/src/app/
 
-RUN npm ci
+COPY --chown=node:node . .
 
-ENV REACT_APP_BACKEND_URL=http://server:3000/
+RUN npm ci --only-production
 
 RUN CI=true npm test
 
+ARG REACT_APP_BACKEND_URL
+
+ENV REACT_APP_BACKEND_URL $REACT_APP_BACKEND_URL
+
 RUN npm run build
 
-# Serve Stage
-FROM nginx:1.20-alpine
+RUN npm install -g serve
 
-COPY --from=build-stage /usr/src/app/build /usr/share/nginx/html
+USER node
+
+CMD ["serve", "build"]
